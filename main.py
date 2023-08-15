@@ -6,6 +6,7 @@ def option_selected(menu_name, option):
 def create_window():
     window = tk.Tk()
     window.title("CDraw")
+    window.config(padx=100, pady=300)
 
     def create_submenu(parent_menu, options):
         submenu = tk.Menu(parent_menu, tearoff=0)
