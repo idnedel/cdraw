@@ -6,22 +6,35 @@ from PIL import Image, ImageTk
 class ImageProcessingApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Image Processing App")
-        
-        self.original_image_label = tk.Label(root)
-        self.original_image_label.pack()
-        
-        self.transformed_image_label = tk.Label(root)
-        self.transformed_image_label.pack()
-        
-        self.create_menus()
-        
+        self.root.title("CDraw")
+
+        self.create_layout()
+
         self.original_image = None
         self.transformed_image = None
-
-        root.attributes('-fullscreen', True)
-        root.bind('<Escape>', lambda event: root.attributes('-fullscreen', False))
+        self.transformed_image_copy = None
         
+        # Tela cheia ao abrir
+        root.state('zoomed')  
+        
+    def create_layout(self):
+        self.frame = tk.Frame(self.root)
+        self.frame.pack(fill="both", expand=True)
+
+        self.original_frame = tk.Frame(self.frame)
+        self.original_frame.pack(side="left", fill="both", expand=True)
+
+        self.transformed_frame = tk.Frame(self.frame)
+        self.transformed_frame.pack(side="left", fill="both", expand=True)
+
+        self.original_image_label = tk.Label(self.original_frame)
+        self.original_image_label.pack(fill="both", expand=True)
+
+        self.transformed_image_label = tk.Label(self.transformed_frame)
+        self.transformed_image_label.pack(fill="both", expand=True)
+
+        self.create_menus()
+
     def create_menus(self):
         menubar = tk.Menu(self.root)
         
@@ -32,7 +45,7 @@ class ImageProcessingApp:
         file_menu.add_command(label="Sobre", command=self.show_about)
         file_menu.add_separator()
         file_menu.add_command(label="Sair", command=self.root.quit)
-        menubar.add_cascade(label="ARQUIVO", menu=file_menu)
+        menubar.add_cascade(label="Arquivo", menu=file_menu)
         
         geometric_menu = tk.Menu(menubar, tearoff=0)
         geometric_menu.add_command(label="Transladar", command=self.translate_image)
@@ -40,34 +53,46 @@ class ImageProcessingApp:
         geometric_menu.add_command(label="Espelhar", command=self.flip_image)
         geometric_menu.add_command(label="Aumentar", command=self.enlarge_image)
         geometric_menu.add_command(label="Diminuir", command=self.reduce_image)
-        menubar.add_cascade(label="TRANSFORMAÇÕES GEOMÉTRICAS", menu=geometric_menu)
+        menubar.add_cascade(label="Transformações Geométricas", menu=geometric_menu)
         
         filters_menu = tk.Menu(menubar, tearoff=0)
         filters_menu.add_command(label="Grayscale", command=self.apply_grayscale)
         filters_menu.add_command(label="Passa Baixa", command=self.apply_low_pass)
         filters_menu.add_command(label="Passa Alta", command=self.apply_high_pass)
         filters_menu.add_command(label="Threshold", command=self.apply_threshold)
-        menubar.add_cascade(label="FILTROS", menu=filters_menu)
+        menubar.add_cascade(label="Filtros", menu=filters_menu)
         
         morphology_menu = tk.Menu(menubar, tearoff=0)
         morphology_menu.add_command(label="Dilatação", command=self.apply_dilation)
         morphology_menu.add_command(label="Erosão", command=self.apply_erosion)
         morphology_menu.add_command(label="Abertura", command=self.apply_opening)
         morphology_menu.add_command(label="Fechamento", command=self.apply_closing)
-        menubar.add_cascade(label="MORFOLOGIA MATEMÁTICA", menu=morphology_menu)
+        menubar.add_cascade(label="Morfologia Matemática", menu=morphology_menu)
         
         features_menu = tk.Menu(menubar, tearoff=0)
-        features_menu.add_command(label="DESAFIO", command=self.challenge_feature)
-        menubar.add_cascade(label="EXTRAÇÃO DE CARACTERÍSTICAS", menu=features_menu)
+        features_menu.add_command(label="Desafio", command=self.challenge_feature)
+        menubar.add_cascade(label="Extração de Características", menu=features_menu)
         
         self.root.config(menu=menubar)
         
+
+    # Funções dos botões    
     def open_image(self):
         file_path = filedialog.askopenfilename()
         if file_path:
             self.original_image = cv2.imread(file_path)
+
+            # Cria cópia da imagem para aplicar os filtros
+            self.transformed_image_copy = self.original_image.copy()
+            
+            # Dimensionar a imagem
+            max_display_width = 600
+            scale_factor = max_display_width / self.original_image.shape[1]
+            self.original_image = cv2.resize(self.original_image, (max_display_width, int(self.original_image.shape[0] * scale_factor)))
+            
             self.display_image(self.original_image, self.original_image_label)
-    
+            self.display_image(self.transformed_image_copy, self.transformed_image_label)
+
     def save_image(self):
         if self.transformed_image is not None:
             file_path = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg")])
@@ -78,7 +103,7 @@ class ImageProcessingApp:
             messagebox.showwarning("Aviso", "Nenhuma imagem transformada para salvar.")
     
     def show_about(self):
-        messagebox.showinfo("Sobre", "Image Processing App\nCriado por [Seu Nome]")
+        messagebox.showinfo("Sobre", "CDraw - Ciência da Computação\nProcessamento Digital de Imagens\nCriado Por Matheus Nedel e Nícolas Dapper")
     
     def display_image(self, image, label_widget):
         if image is not None:
@@ -91,65 +116,62 @@ class ImageProcessingApp:
             label_widget.config(image=None)
     
     def translate_image(self):
-        # Implement translation transformation
+        # transladar
         pass
     
     def rotate_image(self):
-        # Implement rotation transformation
+        # rotacionar
         pass
     
     def flip_image(self):
-        # Implement flip transformation
+        # espelhar
         pass
     
     def enlarge_image(self):
-        # Implement image enlargement transformation
+        # aumentar
         pass
     
     def reduce_image(self):
-        # Implement image reduction transformation
+        # diminuir
         pass
     
     def apply_grayscale(self):
-        # Implement grayscale filter
+        # grayscale
         pass
     
     def apply_low_pass(self):
-        # Implement low-pass filter
+        # passa baixa
         pass
     
     def apply_high_pass(self):
-        # Implement high-pass filter
+        # passa alta
         pass
     
     def apply_threshold(self):
-        # Implement threshold filter
+        # threshold
         pass
     
     def apply_dilation(self):
-        # Implement dilation operation
+        # dilatação
         pass
     
     def apply_erosion(self):
-        # Implement erosion operation
+        # erosão
         pass
     
     def apply_opening(self):
-        # Implement opening operation
+        # abertura
         pass
     
     def apply_closing(self):
-        # Implement closing operation
+        # fechamento
         pass
     
     def challenge_feature(self):
-        # Implement your challenge feature here
+        # desafio
         pass
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.attributes('-fullscreen', True)
-    root.bind('<Escape>', lambda event: root.attributes('-fullscreen', False))
-    
     app = ImageProcessingApp(root)
     root.mainloop()
