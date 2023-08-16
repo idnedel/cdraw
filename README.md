@@ -1,6 +1,6 @@
 # cdraw
 
-Dependências necessárias:
+> > Dependências necessárias:
 
 > Python 3.11.4^
 
