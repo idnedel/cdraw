@@ -74,7 +74,6 @@ class ImageProcessingApp:
         menubar.add_cascade(label="Extração de Características", menu=features_menu)
         
         self.root.config(menu=menubar)
-        
 
     # Funções dos botões    
     def open_image(self):
@@ -94,10 +93,10 @@ class ImageProcessingApp:
             self.display_image(self.transformed_image_copy, self.transformed_image_label)
 
     def save_image(self):
-        if self.transformed_image is not None:
+        if self.transformed_image_copy is not None:
             file_path = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg")])
             if file_path:
-                cv2.imwrite(file_path, self.transformed_image)
+                cv2.imwrite(file_path, self.transformed_image_copy)
                 messagebox.showinfo("Info", "Imagem salva com sucesso!")
         else:
             messagebox.showwarning("Aviso", "Nenhuma imagem transformada para salvar.")
@@ -135,9 +134,13 @@ class ImageProcessingApp:
         # diminuir
         pass
     
+    # grayscale
     def apply_grayscale(self):
-        # grayscale
-        pass
+            if self.transformed_image_copy is not None:
+                gray_image = cv2.cvtColor(self.transformed_image_copy, cv2.COLOR_BGR2GRAY)
+            self.display_image(gray_image, self.transformed_image_label)
+            self.transformed_image_copy = gray_image
+            pass
     
     def apply_low_pass(self):
         # passa baixa
