@@ -50,7 +50,7 @@ class ImageProcessingApp:
         geometric_menu = tk.Menu(menubar, tearoff=0)
         geometric_menu.add_command(label="Transladar", command=self.translate_image)
         geometric_menu.add_command(label="Rotacionar", command=self.rotate_image)
-        geometric_menu.add_command(label="Espelhar", command=self.flip_image)
+        geometric_menu.add_command(label="Espelhar", command=self.mirror_image)
         geometric_menu.add_command(label="Aumentar", command=self.enlarge_image)
         geometric_menu.add_command(label="Diminuir", command=self.reduce_image)
         menubar.add_cascade(label="Transformações Geométricas", menu=geometric_menu)
@@ -122,7 +122,7 @@ class ImageProcessingApp:
         # rotacionar
         pass
     
-    def flip_image(self):
+    def mirror_image(self):
         # espelhar
         pass
     
