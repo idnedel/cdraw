@@ -7,15 +7,14 @@ class ImageProcessingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CDraw")
+        self.root.config(pady =300, padx = 350)
 
         self.create_layout()
 
         self.original_image = None
         self.transformed_image = None
         self.transformed_image_copy = None
-        
-        # Tela cheia ao abrir
-        root.state('zoomed')  
+    
         
     def create_layout(self):
         self.frame = tk.Frame(self.root)
