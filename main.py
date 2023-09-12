@@ -3,6 +3,8 @@ from tkinter import filedialog, messagebox
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 class ImageProcessingApp:
     def __init__(self, root):
@@ -60,16 +62,19 @@ class ImageProcessingApp:
         
         filters_menu = tk.Menu(menubar, tearoff=0)
         filters_menu.add_command(label="Grayscale", command=self.apply_grayscale)
-        filters_menu.add_command(label="Passa Baixa (Média)", command=lambda: self.apply_low_pass("Média"))
-        filters_menu.add_command(label="Passa Baixa (Moda)", command=lambda: self.apply_low_pass("Moda"))
-        filters_menu.add_command(label="Passa Baixa (Mediana)", command=lambda: self.apply_low_pass("Mediana"))
-        filters_menu.add_command(label="Passa Baixa (Gauss)", command=lambda: self.apply_low_pass("Gauss"))
-        menubar.add_cascade(label="Filtros", menu=filters_menu)
-
+        
+        # Submenu para "Passa Baixa"
+        passa_baixa_menu = tk.Menu(filters_menu, tearoff=0)
+        passa_baixa_menu.add_command(label="Média", command=lambda: self.apply_low_pass("Média"))
+        passa_baixa_menu.add_command(label="Moda", command=lambda: self.apply_low_pass("Moda"))
+        passa_baixa_menu.add_command(label="Mediana", command=lambda: self.apply_low_pass("Mediana"))
+        passa_baixa_menu.add_command(label="Gauss", command=lambda: self.apply_low_pass("Gauss"))
+        
+        filters_menu.add_cascade(label="Passa Baixa", menu=passa_baixa_menu)
         filters_menu.add_command(label="Passa Alta", command=self.apply_high_pass)
         filters_menu.add_command(label="Threshold", command=self.apply_threshold)
         menubar.add_cascade(label="Filtros", menu=filters_menu)
-        
+
         morphology_menu = tk.Menu(menubar, tearoff=0)
         morphology_menu.add_command(label="Dilatação", command=self.apply_dilation)
         morphology_menu.add_command(label="Erosão", command=self.apply_erosion)
@@ -80,6 +85,10 @@ class ImageProcessingApp:
         features_menu = tk.Menu(menubar, tearoff=0)
         features_menu.add_command(label="Desafio", command=self.challenge_feature)
         menubar.add_cascade(label="Extração de Características", menu=features_menu)
+
+        remove_filter = tk.Menu(menubar, tearoff=0)
+        remove_filter.add_command(label="Remover", command=self.remove_all_filters)
+        menubar.add_cascade(label="Remover Filtros", menu=remove_filter)
         
         self.root.config(menu=menubar)
 
@@ -157,8 +166,21 @@ class ImageProcessingApp:
             pass
     
     # passa baixa
-    def apply_low_pass(self):
-        pass
+    def apply_low_pass(self, filter_type):
+        if self.transformed_image_copy is not None:
+            if filter_type == "Média":
+                kernel = np.ones((6, 6), np.float32) / 36
+                result = cv2.filter2D(self.transformed_image_copy, -1, kernel)
+            elif filter_type == "Moda":
+                kernel = np.ones((3, 3), np.uint8)
+                result = cv2.medianBlur(self.transformed_image_copy, 3)
+            elif filter_type == "Mediana":
+                result = cv2.GaussianBlur(self.transformed_image_copy, (3, 3), 0)
+            elif filter_type == "Gauss":
+                result = cv2.GaussianBlur(self.transformed_image_copy, (5, 5), 0)
+
+            self.transformed_image_copy = result
+            self.display_image(self.transformed_image_copy, self.transformed_image_label)
     
     def apply_high_pass(self):
         # passa alta
@@ -187,6 +209,12 @@ class ImageProcessingApp:
     def challenge_feature(self):
         # desafio
         pass
+
+    def remove_all_filters(self):
+        if self.original_image is not None:
+            self.transformed_image_copy = self.original_image.copy()
+            self.display_image(self.transformed_image_copy, self.transformed_image_label)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
