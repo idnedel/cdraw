@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import cv2
+import numpy as np
 from PIL import Image, ImageTk
 
 class ImageProcessingApp:
@@ -141,9 +142,14 @@ class ImageProcessingApp:
             self.transformed_image_copy = gray_image
             pass
     
+    # passa baixa
     def apply_low_pass(self):
-        # passa baixa
-        pass
+            if self.transformed_image_copy is not None:
+                kernel_size = 11  # tamanho do kernel deve ser ímpar
+            blurred_image = cv2.GaussianBlur(self.transformed_image_copy, (kernel_size, kernel_size), 0)
+            self.display_image(blurred_image, self.transformed_image_label)
+            self.transformed_image_copy = blurred_image
+            pass
     
     def apply_high_pass(self):
         # passa alta
