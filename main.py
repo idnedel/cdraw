@@ -8,23 +8,26 @@ class ImageProcessingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CDraw")
-        self.root.config(pady =300, padx = 350)
 
         self.create_layout()
 
         self.original_image = None
         self.transformed_image = None
         self.transformed_image_copy = None
+
+        # Tela cheia ao abrir
+        root.state('zoomed')  
     
         
     def create_layout(self):
         self.frame = tk.Frame(self.root)
         self.frame.pack(fill="both", expand=True)
 
-        self.original_frame = tk.Frame(self.frame)
+        # Divida a tela em duas metades com uma borda fina entre elas
+        self.original_frame = tk.Frame(self.frame, borderwidth=1, relief="solid")
         self.original_frame.pack(side="left", fill="both", expand=True)
 
-        self.transformed_frame = tk.Frame(self.frame)
+        self.transformed_frame = tk.Frame(self.frame, borderwidth=1, relief="solid")
         self.transformed_frame.pack(side="left", fill="both", expand=True)
 
         self.original_image_label = tk.Label(self.original_frame)
@@ -57,7 +60,12 @@ class ImageProcessingApp:
         
         filters_menu = tk.Menu(menubar, tearoff=0)
         filters_menu.add_command(label="Grayscale", command=self.apply_grayscale)
-        filters_menu.add_command(label="Passa Baixa", command=self.apply_low_pass)
+        filters_menu.add_command(label="Passa Baixa (Média)", command=lambda: self.apply_low_pass("Média"))
+        filters_menu.add_command(label="Passa Baixa (Moda)", command=lambda: self.apply_low_pass("Moda"))
+        filters_menu.add_command(label="Passa Baixa (Mediana)", command=lambda: self.apply_low_pass("Mediana"))
+        filters_menu.add_command(label="Passa Baixa (Gauss)", command=lambda: self.apply_low_pass("Gauss"))
+        menubar.add_cascade(label="Filtros", menu=filters_menu)
+
         filters_menu.add_command(label="Passa Alta", command=self.apply_high_pass)
         filters_menu.add_command(label="Threshold", command=self.apply_threshold)
         menubar.add_cascade(label="Filtros", menu=filters_menu)
@@ -86,8 +94,14 @@ class ImageProcessingApp:
             
             # Dimensionar a imagem
             max_display_width = 600
+
+            # original
             scale_factor = max_display_width / self.original_image.shape[1]
             self.original_image = cv2.resize(self.original_image, (max_display_width, int(self.original_image.shape[0] * scale_factor)))
+            
+            # copia
+            scale_factor = max_display_width / self.transformed_image_copy.shape[1]
+            self.transformed_image_copy = cv2.resize(self.transformed_image_copy, (max_display_width, int(self.transformed_image_copy.shape[0] * scale_factor)))
             
             self.display_image(self.original_image, self.original_image_label)
             self.display_image(self.transformed_image_copy, self.transformed_image_label)
@@ -144,12 +158,7 @@ class ImageProcessingApp:
     
     # passa baixa
     def apply_low_pass(self):
-            if self.transformed_image_copy is not None:
-                kernel_size = 11  # tamanho do kernel deve ser ímpar
-            blurred_image = cv2.GaussianBlur(self.transformed_image_copy, (kernel_size, kernel_size), 0)
-            self.display_image(blurred_image, self.transformed_image_label)
-            self.transformed_image_copy = blurred_image
-            pass
+        pass
     
     def apply_high_pass(self):
         # passa alta
