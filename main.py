@@ -145,9 +145,11 @@ class ImageProcessingApp:
         # rotacionar
         pass
     
+    # espelhar - OK
     def mirror_image(self):
-        # espelhar
-        pass
+        if self.transformed_image_copy is not None:
+            self.transformed_image_copy = cv2.flip(self.transformed_image_copy, 1)
+            self.display_image(self.transformed_image_copy, self.transformed_image_label)
     
     def enlarge_image(self):
         # aumentar
