@@ -56,21 +56,22 @@ class ImageProcessingApp:
         geometric_menu.add_command(label="Transladar", command=self.translate_image)
         geometric_menu.add_command(label="Rotacionar", command=self.rotate_image)
         geometric_menu.add_command(label="Espelhar", command=self.mirror_image)
-        geometric_menu.add_command(label="Aumentar", command=self.enlarge_image)
-        geometric_menu.add_command(label="Diminuir", command=self.reduce_image)
+        filters_menu.add_command(label="Apliação", command=self.show_scaling_frame)
+        filters_menu.add_command(label="Redução", command=self.show_scaling_frame)
         menubar.add_cascade(label="Transformações Geométricas", menu=geometric_menu)
-        
+ 
         filters_menu = tk.Menu(menubar, tearoff=0)
         filters_menu.add_command(label="Grayscale", command=self.apply_grayscale)
         
-        # Submenu para "Passa Baixa"
+
         passa_baixa_menu = tk.Menu(filters_menu, tearoff=0)
+        filters_menu.add_cascade(label="Passa Baixa", menu=passa_baixa_menu)
+        # submenu para "Passa Baixa"
         passa_baixa_menu.add_command(label="Média", command=lambda: self.apply_low_pass("Média"))
         passa_baixa_menu.add_command(label="Moda", command=lambda: self.apply_low_pass("Moda"))
         passa_baixa_menu.add_command(label="Mediana", command=lambda: self.apply_low_pass("Mediana"))
         passa_baixa_menu.add_command(label="Gauss", command=lambda: self.apply_low_pass("Gauss"))
-        
-        filters_menu.add_cascade(label="Passa Baixa", menu=passa_baixa_menu)
+
         filters_menu.add_command(label="Passa Alta", command=self.apply_high_pass)
         filters_menu.add_command(label="Threshold", command=self.apply_threshold)
         menubar.add_cascade(label="Filtros", menu=filters_menu)
@@ -159,7 +160,7 @@ class ImageProcessingApp:
         # diminuir
         pass
     
-    # grayscale
+    # grayscale - OK
     def apply_grayscale(self):
             if self.transformed_image_copy is not None:
                 gray_image = cv2.cvtColor(self.transformed_image_copy, cv2.COLOR_BGR2GRAY)
