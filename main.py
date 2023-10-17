@@ -87,8 +87,8 @@ class ImageProcessingApp:
         menubar.add_cascade(label="Extração de Características", menu=features_menu)
 
         remove_filter = tk.Menu(menubar, tearoff=0)
-        remove_filter.add_command(label="Remover", command=self.remove_all_filters)
-        menubar.add_cascade(label="Remover Filtros", menu=remove_filter)
+        remove_filter.add_command(label="Restaurar", command=self.remove_all_filters)
+        menubar.add_cascade(label="Restaurar Imagem", menu=remove_filter)
         
         self.root.config(menu=menubar)
 
@@ -137,8 +137,43 @@ class ImageProcessingApp:
         else:
             label_widget.config(image=None)
     
+    # transladar - não sei se isso aqui ta certo
     def translate_image(self):
-        # transladar
+        if self.transformed_image_copy is not None:
+        # Cria a janela de dialogo
+            dialog = tk.Toplevel(self.root)
+            dialog.title("Transladar Imagem")
+
+        x_label = tk.Label(dialog, text="Translação em X (pixels):")
+        x_label.pack()
+        x_entry = tk.Entry(dialog)
+        x_entry.pack()
+
+        y_label = tk.Label(dialog, text="Translação em Y (pixels):")
+        y_label.pack()
+        y_entry = tk.Entry(dialog)
+        y_entry.pack()
+
+        def apply_translation():
+
+            translate_x = int(x_entry.get())
+            translate_y = int(y_entry.get())
+
+            dialog.destroy()
+
+            if translate_x != 0 or translate_y != 0:
+                #defina a matriz de transformação
+                translation_matrix = np.float32([[1, 0, translate_x], [0, 1, translate_y]])
+
+                #aplica a translação na imagem
+                self.transformed_image_copy = cv2.warpAffine(self.transformed_image_copy, translation_matrix, (self.transformed_image_copy.shape[1], self.transformed_image_copy.shape[0]))
+
+                #att a exibição da imagem na interface
+                self.display_image(self.transformed_image_copy, self.transformed_image_label)
+
+        apply_button = tk.Button(dialog, text="Aplicar", command=apply_translation)
+        apply_button.pack()
+
         pass
     
     def rotate_image(self):
