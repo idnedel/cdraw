@@ -2,258 +2,245 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import cv2
 import numpy as np
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import Scale
+from tkinter import simpledialog
 
-class ImageProcessingApp:
+class AplicativoProcessamentoDeImagens:
     def __init__(self, root):
         self.root = root
         self.root.title("CDraw")
 
-        self.create_layout()
+        self.criar_layout()
 
-        self.original_image = None
-        self.transformed_image = None
-        self.transformed_image_copy = None
+        self.imagem_original = None
+        self.imagem_transformada = None
+        self.copia_imagem_transformada = None
 
         # Tela cheia ao abrir
-        root.state('zoomed')  
-    
-        
-    def create_layout(self):
+        root.state('zoomed')
+
+    def criar_layout(self):
         self.frame = tk.Frame(self.root)
         self.frame.pack(fill="both", expand=True)
 
         # Divida a tela em duas metades com uma borda fina entre elas
-        self.original_frame = tk.Frame(self.frame, borderwidth=1, relief="solid")
-        self.original_frame.pack(side="left", fill="both", expand=True)
+        self.frame_original = tk.Frame(self.frame, borderwidth=1, relief="solid")
+        self.frame_original.pack(side="left", fill="both", expand=True)
 
-        self.transformed_frame = tk.Frame(self.frame, borderwidth=1, relief="solid")
-        self.transformed_frame.pack(side="left", fill="both", expand=True)
+        self.frame_transformada = tk.Frame(self.frame, borderwidth=1, relief="solid")
+        self.frame_transformada.pack(side="left", fill="both", expand=True)
 
-        self.original_image_label = tk.Label(self.original_frame)
-        self.original_image_label.pack(fill="both", expand=True)
+        self.rotulo_imagem_original = tk.Label(self.frame_original)
+        self.rotulo_imagem_original.pack(fill="both", expand=True)
 
-        self.transformed_image_label = tk.Label(self.transformed_frame)
-        self.transformed_image_label.pack(fill="both", expand=True)
+        self.rotulo_imagem_transformada = tk.Label(self.frame_transformada)
+        self.rotulo_imagem_transformada.pack(fill="both", expand=True)
 
-        self.create_menus()
+        self.criar_menus()
 
-    def create_menus(self):
-        menubar = tk.Menu(self.root)
-        
-        file_menu = tk.Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Abrir imagem", command=self.open_image)
-        file_menu.add_command(label="Salvar imagem", command=self.save_image)
-        file_menu.add_separator()
-        file_menu.add_command(label="Sobre", command=self.show_about)
-        file_menu.add_separator()
-        file_menu.add_command(label="Sair", command=self.root.quit)
-        menubar.add_cascade(label="Arquivo", menu=file_menu)
-        
-        geometric_menu = tk.Menu(menubar, tearoff=0)
-        geometric_menu.add_command(label="Transladar", command=self.translate_image)
-        geometric_menu.add_command(label="Rotacionar", command=self.rotate_image)
-        geometric_menu.add_command(label="Espelhar", command=self.mirror_image)
-        geometric_menu.add_command(label="Aumentar", command=self.enlarge_image)
-        geometric_menu.add_command(label="Diminuir", command=self.reduce_image)
-        menubar.add_cascade(label="Transformações Geométricas", menu=geometric_menu)
-        
-        filters_menu = tk.Menu(menubar, tearoff=0)
-        filters_menu.add_command(label="Grayscale", command=self.apply_grayscale)
-        
-        # Submenu para "Passa Baixa"
-        passa_baixa_menu = tk.Menu(filters_menu, tearoff=0)
-        passa_baixa_menu.add_command(label="Média", command=lambda: self.apply_low_pass("Média"))
-        passa_baixa_menu.add_command(label="Moda", command=lambda: self.apply_low_pass("Moda"))
-        passa_baixa_menu.add_command(label="Mediana", command=lambda: self.apply_low_pass("Mediana"))
-        passa_baixa_menu.add_command(label="Gauss", command=lambda: self.apply_low_pass("Gauss"))
-        
-        filters_menu.add_cascade(label="Passa Baixa", menu=passa_baixa_menu)
-        filters_menu.add_command(label="Passa Alta", command=self.apply_high_pass)
-        filters_menu.add_command(label="Threshold", command=self.apply_threshold)
-        menubar.add_cascade(label="Filtros", menu=filters_menu)
+    def criar_menus(self):
+        barra_de_menu = tk.Menu(self.root)
 
-        morphology_menu = tk.Menu(menubar, tearoff=0)
-        morphology_menu.add_command(label="Dilatação", command=self.apply_dilation)
-        morphology_menu.add_command(label="Erosão", command=self.apply_erosion)
-        morphology_menu.add_command(label="Abertura", command=self.apply_opening)
-        morphology_menu.add_command(label="Fechamento", command=self.apply_closing)
-        menubar.add_cascade(label="Morfologia Matemática", menu=morphology_menu)
-        
-        features_menu = tk.Menu(menubar, tearoff=0)
-        features_menu.add_command(label="Desafio", command=self.challenge_feature)
-        menubar.add_cascade(label="Extração de Características", menu=features_menu)
+        menu_arquivo = tk.Menu(barra_de_menu, tearoff=0)
+        menu_arquivo.add_command(label="Abrir imagem", command=self.abrir_imagem)
+        menu_arquivo.add_command(label="Salvar imagem", command=self.salvar_imagem)
+        menu_arquivo.add_separator()
+        menu_arquivo.add_command(label="Sobre", command=self.mostrar_sobre)
+        menu_arquivo.add_separator()
+        menu_arquivo.add_command(label="Sair", command=self.root.quit)
+        barra_de_menu.add_cascade(label="Arquivo", menu=menu_arquivo)
 
-        remove_filter = tk.Menu(menubar, tearoff=0)
-        remove_filter.add_command(label="Restaurar", command=self.remove_all_filters)
-        menubar.add_cascade(label="Restaurar Imagem", menu=remove_filter)
-        
-        self.root.config(menu=menubar)
+        menu_geometrico = tk.Menu(barra_de_menu, tearoff=0)
+        menu_geometrico.add_command(label="Transladar", command=self.transladar_imagem)
+        menu_geometrico.add_command(label="Rotacionar", command=self.rotacionar_imagem)
+        menu_geometrico.add_command(label="Espelhar", command=self.espelhar_imagem)
+        menu_geometrico.add_command(label="Aumentar", command=self.aumentar_imagem)
+        menu_geometrico.add_command(label="Diminuir", command=self.reduzir_imagem)
+        barra_de_menu.add_cascade(label="Transformações Geométricas", menu=menu_geometrico)
 
-    # Funções dos botões    
-    def open_image(self):
-        file_path = filedialog.askopenfilename()
-        if file_path:
-            self.original_image = cv2.imread(file_path)
+        menu_pre_proc = tk.Menu(barra_de_menu, tearoff=0)
+        menu_pre_proc.add_command(label="Grayscale", command=self.aplicar_grayscale)
+        menu_pre_proc.add_command(label="Brilho", command=self.aplicar_brilho)
+        menu_pre_proc.add_command(label="Contraste", command=self.aplicar_contraste)
+        barra_de_menu.add_cascade(label="Pré-Processamento", menu=menu_pre_proc)
+
+        menu_remover_filtro = tk.Menu(barra_de_menu, tearoff=0)
+        menu_remover_filtro.add_command(label="Restaurar", command=self.remover_todos_os_filtros)
+        barra_de_menu.add_cascade(label="Restaurar Imagem", menu=menu_remover_filtro)
+
+        self.root.config(menu=barra_de_menu)
+
+    # Funções dos botões
+    def abrir_imagem(self):
+        caminho_arquivo = filedialog.askopenfilename()
+        if caminho_arquivo:
+            self.imagem_original = cv2.imread(caminho_arquivo)
 
             # Cria cópia da imagem para aplicar os filtros
-            self.transformed_image_copy = self.original_image.copy()
-            
+            self.copia_imagem_transformada = self.imagem_original.copy()
+
             # Dimensionar a imagem
-            max_display_width = 600
+            largura_maxima_exibicao = 600
 
             # original
-            scale_factor = max_display_width / self.original_image.shape[1]
-            self.original_image = cv2.resize(self.original_image, (max_display_width, int(self.original_image.shape[0] * scale_factor)))
-            
-            # copia
-            scale_factor = max_display_width / self.transformed_image_copy.shape[1]
-            self.transformed_image_copy = cv2.resize(self.transformed_image_copy, (max_display_width, int(self.transformed_image_copy.shape[0] * scale_factor)))
-            
-            self.display_image(self.original_image, self.original_image_label)
-            self.display_image(self.transformed_image_copy, self.transformed_image_label)
+            fator_escala = largura_maxima_exibicao / self.imagem_original.shape[1]
+            self.imagem_original = cv2.resize(self.imagem_original, (largura_maxima_exibicao, int(self.imagem_original.shape[0] * fator_escala)))
 
-    def save_image(self):
-        if self.transformed_image_copy is not None:
-            file_path = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg")])
-            if file_path:
-                cv2.imwrite(file_path, self.transformed_image_copy)
-                messagebox.showinfo("Info", "Imagem salva com sucesso!")
+            # cópia
+            fator_escala = largura_maxima_exibicao / self.copia_imagem_transformada.shape[1]
+            self.copia_imagem_transformada = cv2.resize(self.copia_imagem_transformada, (largura_maxima_exibicao, int(self.copia_imagem_transformada.shape[0] * fator_escala)))
+
+            self.exibir_imagem(self.imagem_original, self.rotulo_imagem_original)
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
+    def salvar_imagem(self):
+        if self.copia_imagem_transformada is not None:
+            caminho_arquivo = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("Arquivos JPEG", "*.jpg")])
+            if caminho_arquivo:
+                cv2.imwrite(caminho_arquivo, self.copia_imagem_transformada)
+                messagebox.showinfo("Informação", "Imagem salva com sucesso!")
         else:
             messagebox.showwarning("Aviso", "Nenhuma imagem transformada para salvar.")
-    
-    def show_about(self):
+
+    def mostrar_sobre(self):
         messagebox.showinfo("Sobre", "CDraw - Ciência da Computação\nProcessamento Digital de Imagens\nCriado Por Matheus Nedel e Nícolas Dapper")
-    
-    def display_image(self, image, label_widget):
-        if image is not None:
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            image = Image.fromarray(image)
-            photo = ImageTk.PhotoImage(image=image)
-            label_widget.config(image=photo)
-            label_widget.image = photo
+
+    def exibir_imagem(self, imagem, rotulo_widget):
+        if imagem is not None:
+            imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
+            imagem = Image.fromarray(imagem)
+            foto = ImageTk.PhotoImage(image=imagem)
+            rotulo_widget.config(image=foto)
+            rotulo_widget.image = foto
         else:
-            label_widget.config(image=None)
-    
-    # transladar - não sei se isso aqui ta certo
-    def translate_image(self):
-        if self.transformed_image_copy is not None:
-        # Cria a janela de dialogo
-            dialog = tk.Toplevel(self.root)
-            dialog.title("Transladar Imagem")
+            rotulo_widget.config(image=None)
 
-        x_label = tk.Label(dialog, text="Translação em X (pixels):")
-        x_label.pack()
-        x_entry = tk.Entry(dialog)
-        x_entry.pack()
+    # Transladar - não sei se isso aqui está certo
+    def transladar_imagem(self):
+        if self.copia_imagem_transformada is not None:
+            dialogo = tk.Toplevel(self.root)
+            dialogo.title("Transladar Imagem")
 
-        y_label = tk.Label(dialog, text="Translação em Y (pixels):")
-        y_label.pack()
-        y_entry = tk.Entry(dialog)
-        y_entry.pack()
+            x_label = tk.Label(dialogo, text="Translação em X (pixels):")
+            x_label.pack()
+            x_entry = tk.Entry(dialogo)
+            x_entry.pack()
 
-        def apply_translation():
+            y_label = tk.Label(dialogo, text="Translação em Y (pixels):")
+            y_label.pack()
+            y_entry = tk.Entry(dialogo)
+            y_entry.pack()
 
-            translate_x = int(x_entry.get())
-            translate_y = int(y_entry.get())
+            def aplicar_translacao():
+                translacao_x = int(x_entry.get())
+                translacao_y = int(y_entry.get())
 
-            dialog.destroy()
+                dialogo.destroy()
 
-            if translate_x != 0 or translate_y != 0:
-                #defina a matriz de transformação
-                translation_matrix = np.float32([[1, 0, translate_x], [0, 1, translate_y]])
+                if translacao_x != 0 or translacao_y != 0:
+                    # Defina a matriz de transformação
+                    matriz_translacao = np.float32([[1, 0, translacao_x], [0, 1, translacao_y]])
 
-                #aplica a translação na imagem
-                self.transformed_image_copy = cv2.warpAffine(self.transformed_image_copy, translation_matrix, (self.transformed_image_copy.shape[1], self.transformed_image_copy.shape[0]))
+                    # Aplica a translação na imagem
+                    self.copia_imagem_transformada = cv2.warpAffine(self.copia_imagem_transformada, matriz_translacao, (self.copia_imagem_transformada.shape[1], self.copia_imagem_transformada.shape[0]))
 
-                #att a exibição da imagem na interface
-                self.display_image(self.transformed_image_copy, self.transformed_image_label)
+                    # Atualiza a exibição da imagem na interface
+                    self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
-        apply_button = tk.Button(dialog, text="Aplicar", command=apply_translation)
-        apply_button.pack()
+            botao_aplicar = tk.Button(dialogo, text="Aplicar", command=aplicar_translacao)
+            botao_aplicar.pack()
 
-        pass
-    
-    def rotate_image(self):
-        # rotacionar
-        pass
-    
-    # espelhar - OK
-    def mirror_image(self):
-        if self.transformed_image_copy is not None:
-            self.transformed_image_copy = cv2.flip(self.transformed_image_copy, 1)
-            self.display_image(self.transformed_image_copy, self.transformed_image_label)
-    
-    def enlarge_image(self):
-        # aumentar
-        pass
-    
-    def reduce_image(self):
-        # diminuir
-        pass
-    
-    # grayscale
-    def apply_grayscale(self):
-            if self.transformed_image_copy is not None:
-                gray_image = cv2.cvtColor(self.transformed_image_copy, cv2.COLOR_BGR2GRAY)
-            self.display_image(gray_image, self.transformed_image_label)
-            self.transformed_image_copy = gray_image
-            pass
-    
-    # passa baixa
-    def apply_low_pass(self, filter_type):
-        if self.transformed_image_copy is not None:
-            if filter_type == "Média":
-                kernel = np.ones((6, 6), np.float32) / 36
-                result = cv2.filter2D(self.transformed_image_copy, -1, kernel)
-            elif filter_type == "Moda":
-                kernel = np.ones((3, 3), np.uint8)
-                result = cv2.medianBlur(self.transformed_image_copy, 3)
-            elif filter_type == "Mediana":
-                result = cv2.GaussianBlur(self.transformed_image_copy, (3, 3), 0)
-            elif filter_type == "Gauss":
-                result = cv2.GaussianBlur(self.transformed_image_copy, (5, 5), 0)
+    def rotacionar_imagem(self):
+        if self.copia_imagem_transformada is not None:
+            # Gire a imagem em 90 graus
+            self.copia_imagem_transformada = cv2.rotate(self.copia_imagem_transformada, cv2.ROTATE_90_CLOCKWISE)
 
-            self.transformed_image_copy = result
-            self.display_image(self.transformed_image_copy, self.transformed_image_label)
-    
-    def apply_high_pass(self):
-        # passa alta
-        pass
-    
-    def apply_threshold(self):
-        # threshold
-        pass
-    
-    def apply_dilation(self):
-        # dilatação
-        pass
-    
-    def apply_erosion(self):
-        # erosão
-        pass
-    
-    def apply_opening(self):
-        # abertura
-        pass
-    
-    def apply_closing(self):
-        # fechamento
-        pass
-    
-    def challenge_feature(self):
-        # desafio
-        pass
+            # Atualize a exibição da imagem na interface
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
-    def remove_all_filters(self):
-        if self.original_image is not None:
-            self.transformed_image_copy = self.original_image.copy()
-            self.display_image(self.transformed_image_copy, self.transformed_image_label)
 
+    # Espelhar - OK
+    def espelhar_imagem(self):
+        if self.copia_imagem_transformada is not None:
+            self.copia_imagem_transformada = cv2.flip(self.copia_imagem_transformada, 1)
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
+    def aumentar_imagem(self):
+        if self.copia_imagem_transformada is not None:
+            pil_img = Image.fromarray(cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2RGB))
+            pil_img = ImageOps.fit(pil_img, (2 * pil_img.width, 2 * pil_img.height))
+            self.copia_imagem_transformada = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
+    def reduzir_imagem(self):
+        if self.copia_imagem_transformada is not None:
+            pil_img = Image.fromarray(cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2RGB))
+            pil_img = ImageOps.fit(pil_img, (int(pil_img.width / 2.0), int(pil_img.height / 2.0)))
+            self.copia_imagem_transformada = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
+    # Grayscale
+    def aplicar_grayscale(self):
+        if self.copia_imagem_transformada is not None:
+            imagem_em_escala_de_cinza = cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2GRAY)
+            self.exibir_imagem(imagem_em_escala_de_cinza, self.rotulo_imagem_transformada)
+            self.copia_imagem_transformada = imagem_em_escala_de_cinza
+
+    # Brilho
+    def aplicar_brilho(self):
+        if self.copia_imagem_transformada is not None:
+            dialogo = tk.Toplevel(self.root)
+            dialogo.title("Ajustar Brilho")
+
+            escala_brilho = Scale(dialogo, from_=-100, to=100, resolution=1, orient="horizontal", label="Brilho")
+            escala_brilho.set(0)  # Valor padrão inicial
+            escala_brilho.pack()
+
+            def aplicar_ajuste_brilho():
+                fator_brilho = escala_brilho.get()
+
+                imagem_ajustada = cv2.convertScaleAbs(self.copia_imagem_transformada, alpha=1.0, beta=fator_brilho)
+
+                self.copia_imagem_transformada = imagem_ajustada
+                self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
+                dialogo.destroy()
+
+            botao_aplicar = tk.Button(dialogo, text="Aplicar", command=aplicar_ajuste_brilho)
+            botao_aplicar.pack()
+
+    # Contraste
+    def aplicar_contraste(self):
+        if self.copia_imagem_transformada is not None:
+            dialogo = tk.Toplevel(self.root)
+            dialogo.title("Ajustar Contraste")
+
+            escala_contraste = Scale(dialogo, from_=1.0, to=10, resolution=0.01, orient="horizontal", label="Contraste")
+            escala_contraste.set(1.0)  # Valor padrão inicial
+            escala_contraste.pack()
+
+            def aplicar_ajuste_contraste():
+                fator_contraste = escala_contraste.get()
+
+                imagem_ajustada = cv2.convertScaleAbs(self.copia_imagem_transformada, alpha=fator_contraste, beta=0)
+
+                self.copia_imagem_transformada = imagem_ajustada
+                self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
+                dialogo.destroy()
+
+            botao_aplicar = tk.Button(dialogo, text="Aplicar", command=aplicar_ajuste_contraste)
+            botao_aplicar.pack()
+
+   
+    def remover_todos_os_filtros(self):
+        if self.imagem_original is not None:
+            self.copia_imagem_transformada = self.imagem_original.copy()
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = ImageProcessingApp(root)
+    app = AplicativoProcessamentoDeImagens(root)
     root.mainloop()
