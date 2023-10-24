@@ -66,6 +66,17 @@ class AplicativoProcessamentoDeImagens:
         menu_pre_proc.add_command(label="Contraste", command=self.aplicar_contraste)
         barra_de_menu.add_cascade(label="Pré-Processamento", menu=menu_pre_proc)
 
+        menu_morf_mat = tk.Menu(barra_de_menu, tearoff=0)
+        menu_morf_mat.add_command(label="Dilatação", command=self.aplicar_dilatacao)
+        menu_morf_mat.add_command(label="Erosão", command=self.aplicar_erosao)
+        menu_morf_mat.add_command(label="Abertura", command=self.aplicar_abertura)
+        menu_morf_mat.add_command(label="Fechamento", command=self.aplicar_fechamento)
+        barra_de_menu.add_cascade(label="Morfologia", menu=menu_morf_mat)
+
+        menu_desafio = tk.Menu(barra_de_menu, tearoff=0)
+        menu_desafio.add_command(label="Desafio", command=self.aplicar_desafio)
+        barra_de_menu.add_cascade(label="Extração de Característica", menu=menu_desafio)
+
         menu_remover_filtro = tk.Menu(barra_de_menu, tearoff=0)
         menu_remover_filtro.add_command(label="Restaurar", command=self.remover_todos_os_filtros)
         barra_de_menu.add_cascade(label="Restaurar Imagem", menu=menu_remover_filtro)
@@ -117,6 +128,8 @@ class AplicativoProcessamentoDeImagens:
         else:
             rotulo_widget.config(image=None)
 
+# TRANSFORMAÇÕES GEOMÉTRICAS ----------------------------------------------------------------------------------------------------------------------------
+
     # Transladar - não sei se isso aqui está certo
     def transladar_imagem(self):
         if self.copia_imagem_transformada is not None:
@@ -152,6 +165,7 @@ class AplicativoProcessamentoDeImagens:
             botao_aplicar = tk.Button(dialogo, text="Aplicar", command=aplicar_translacao)
             botao_aplicar.pack()
 
+    # Rotacionar - OK
     def rotacionar_imagem(self):
         if self.copia_imagem_transformada is not None:
             # Gire a imagem em 90 graus
@@ -167,6 +181,7 @@ class AplicativoProcessamentoDeImagens:
             self.copia_imagem_transformada = cv2.flip(self.copia_imagem_transformada, 1)
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
+    # Aumentar - OK
     def aumentar_imagem(self):
         if self.copia_imagem_transformada is not None:
             pil_img = Image.fromarray(cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2RGB))
@@ -174,6 +189,7 @@ class AplicativoProcessamentoDeImagens:
             self.copia_imagem_transformada = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
+    # Reduzir - OK
     def reduzir_imagem(self):
         if self.copia_imagem_transformada is not None:
             pil_img = Image.fromarray(cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2RGB))
@@ -181,14 +197,16 @@ class AplicativoProcessamentoDeImagens:
             self.copia_imagem_transformada = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
-    # Grayscale
+# FILTROS ----------------------------------------------------------------------------------------------------------------------------
+
+    # Grayscale - OK
     def aplicar_grayscale(self):
         if self.copia_imagem_transformada is not None:
             imagem_em_escala_de_cinza = cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2GRAY)
             self.exibir_imagem(imagem_em_escala_de_cinza, self.rotulo_imagem_transformada)
             self.copia_imagem_transformada = imagem_em_escala_de_cinza
 
-    # Brilho
+    # Brilho - OK
     def aplicar_brilho(self):
         if self.copia_imagem_transformada is not None:
             dialogo = tk.Toplevel(self.root)
@@ -211,7 +229,7 @@ class AplicativoProcessamentoDeImagens:
             botao_aplicar = tk.Button(dialogo, text="Aplicar", command=aplicar_ajuste_brilho)
             botao_aplicar.pack()
 
-    # Contraste
+    # Contraste - OK
     def aplicar_contraste(self):
         if self.copia_imagem_transformada is not None:
             dialogo = tk.Toplevel(self.root)
@@ -234,7 +252,33 @@ class AplicativoProcessamentoDeImagens:
             botao_aplicar = tk.Button(dialogo, text="Aplicar", command=aplicar_ajuste_contraste)
             botao_aplicar.pack()
 
-   
+# MORFOLOGIA MATEMÁTICA ----------------------------------------------------------------------------------------------------------------------------   
+
+    # Dilatação
+    def aplicar_dilatacao(self):
+        pass
+
+    # Erosão
+    def aplicar_erosao(self):
+        pass
+
+    # Abertura
+    def aplicar_abertura(self):
+        pass
+
+    # Fechamento
+    def aplicar_fechamento(self):
+        pass
+
+# EXTRAÇÃO DE CARACTERÍSTICA ----------------------------------------------------------------------------------------------------------------------------    
+
+    # Desafio
+    def aplicar_desafio(self):
+        pass
+
+# FERRAMENTAS ----------------------------------------------------------------------------------------------------------------------------
+
+    # Remover filtros - OK
     def remover_todos_os_filtros(self):
         if self.imagem_original is not None:
             self.copia_imagem_transformada = self.imagem_original.copy()
