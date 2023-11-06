@@ -225,20 +225,21 @@ class AplicativoProcessamentoImagem:
     
     # passa baixa
     def apply_low_pass(self, filter_type):
-        if self.transformed_image_copy is not None:
+        if self.copia_imagem_transformada is not None:
             if filter_type == "Média":
-                kernel = np.ones((6, 6), np.float32) / 36
-                result = cv2.filter2D(self.transformed_image_copy, -1, kernel)
+                kernel = np.ones((5, 5), np.float32) / 25
+                result = cv2.filter2D(self.copia_imagem_transformada, -1, kernel)
             elif filter_type == "Moda":
                 kernel = np.ones((3, 3), np.uint8)
-                result = cv2.medianBlur(self.transformed_image_copy, 3)
+                result = cv2.medianBlur(self.copia_imagem_transformada, 3)
             elif filter_type == "Mediana":
-                result = cv2.GaussianBlur(self.transformed_image_copy, (3, 3), 0)
+                kernel = np.ones((3, 3), np.uint8)
+                result = cv2.medianBlur(self.copia_imagem_transformada, 5)
             elif filter_type == "Gauss":
-                result = cv2.GaussianBlur(self.transformed_image_copy, (5, 5), 0)
+                result = cv2.GaussianBlur(self.copia_imagem_transformada, (5, 5), 1)
 
-            self.transformed_image_copy = result
-            self.display_image(self.transformed_image_copy, self.transformed_image_label)
+            self.copia_imagem_transformada = result
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
     
     def apply_high_pass(self):
         # passa alta
