@@ -72,8 +72,13 @@ class AplicativoProcessamentoImagem:
         passa_baixa_menu.add_command(label="Mediana", command=lambda: self.apply_low_pass("Mediana"))
         passa_baixa_menu.add_command(label="Gauss", command=lambda: self.apply_low_pass("Gauss"))
         
+        passa_alta_menu = tk.Menu(barra_menu, tearoff=0)
+        passa_alta_menu.add_command(label="Robert", command=lambda: self.apply_high_pass("Robert"))
+        passa_alta_menu.add_command(label="Prewitt", command=lambda: self.apply_high_pass("Prewitt"))
+        passa_alta_menu.add_command(label="Robinson", command=lambda: self.apply_high_pass("Robinson"))
+        
         barra_menu.add_cascade(label="Passa Baixa", menu=passa_baixa_menu)
-        menu_filtro.add_command(label="Passa Alta", command=self.apply_high_pass)
+        barra_menu.add_cascade(label="Passa Alta", menu=passa_alta_menu)
         menu_filtro.add_command(label="Threshold", command=self.apply_threshold)
         barra_menu.add_cascade(label="Filtros", menu=menu_filtro)
 
@@ -240,10 +245,53 @@ class AplicativoProcessamentoImagem:
 
             self.copia_imagem_transformada = result
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
     
-    def apply_high_pass(self):
-        # passa alta
-        pass
+    def apply_high_pass(self, filter_type):
+        if self.copia_imagem_transformada is not None:
+            if filter_type == "Robert":
+                kernel_x = np.array([[1, 0], [0, -1]], dtype=np.float32)
+                kernel_y = np.array([[0, 1], [-1, 0]], dtype=np.float32)
+             
+                result_x = cv2.filter2D(self.copia_imagem_transformada, -1, kernel_x)
+                result_y = cv2.filter2D(self.copia_imagem_transformada, -1, kernel_y)
+
+                result = cv2.add(result_x, result_y)
+                
+            elif filter_type == "Prewitt":
+                kernel_x = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]], dtype=np.float32)
+                kernel_y = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]], dtype=np.float32)
+
+                result_x = cv2.filter2D(self.copia_imagem_transformada, -1, kernel_x)
+                result_y = cv2.filter2D(self.copia_imagem_transformada, -1, kernel_y)
+
+                result = cv2.add(result_x, result_y)
+                
+            elif filter_type == "Robinson":
+                if len(self.copia_imagem_transformada.shape) == 3:
+                    self.copia_imagem_transformada = cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2GRAY)
+
+                masks = [
+                    np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]]),  
+                    np.array([[2, 1, 0], [1, 0, -1], [0, -1, -2]]),  
+                    np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]]),  
+                    np.array([[0, -1, -2], [1, 0, -1], [2, 1, 0]]),  
+                    np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]), 
+                    np.array([[-2, -1, 0], [-1, 0, 1], [0, 1, 2]]),  
+                    np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]),  
+                    np.array([[0, 1, 2], [-1, 0, 1], [-2, -1, 0]])   
+                ]
+
+                result = np.zeros_like(self.copia_imagem_transformada)
+
+                for mask in masks:
+                    filtered_image = cv2.filter2D(self.copia_imagem_transformada, -1, mask)
+                    result = np.maximum(result, filtered_image)
+
+            
+            self.copia_imagem_transformada = result
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
     
     def apply_threshold(self):
         # threshold
