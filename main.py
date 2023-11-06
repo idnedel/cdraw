@@ -79,14 +79,12 @@ class AplicativoProcessamentoImagem:
         
         barra_menu.add_cascade(label="Passa Baixa", menu=passa_baixa_menu)
         barra_menu.add_cascade(label="Passa Alta", menu=passa_alta_menu)
-        menu_filtro.add_command(label="Threshold", command=self.apply_threshold)
-        barra_menu.add_cascade(label="Filtros", menu=menu_filtro)
 
         morphology_menu = tk.Menu(barra_menu, tearoff=0)
-        morphology_menu.add_command(label="Dilatação", command=self.apply_dilation)
-        morphology_menu.add_command(label="Erosão", command=self.apply_erosion)
-        morphology_menu.add_command(label="Abertura", command=self.apply_opening)
-        morphology_menu.add_command(label="Fechamento", command=self.apply_closing)
+        morphology_menu.add_command(label="Dilatação", command=self.apply_dilatacao)
+        morphology_menu.add_command(label="Erosão", command=self.apply_erosao)
+        morphology_menu.add_command(label="Abertura", command=self.apply_abertura)
+        morphology_menu.add_command(label="Fechamento", command=self.apply_fechamento)
         barra_menu.add_cascade(label="Morfologia Matemática", menu=morphology_menu)
         
         
@@ -293,25 +291,58 @@ class AplicativoProcessamentoImagem:
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
     
-    def apply_threshold(self):
-        # threshold
-        pass
+    def apply_dilatacao(self):
+        if self.copia_imagem_transformada is not None:
+            # Crie um kernel (elemento estruturante) para a dilatação
+            kernel = np.ones((3, 3), np.uint8)
+
+            # Aplicar a operação de dilatação na imagem
+            resultado = cv2.dilate(self.copia_imagem_transformada, kernel, iterations=1)
+
+            self.copia_imagem_transformada = resultado
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+        
     
-    def apply_dilation(self):
-        # dilatação
-        pass
+    def apply_erosao(self):
+        if self.copia_imagem_transformada is not None:
+            # Crie um kernel (elemento estruturante) para a erosão
+            kernel = np.ones((3, 3), np.uint8)
+
+            # Aplicar a operação de erosão na imagem
+            resultado = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
+
+            self.copia_imagem_transformada = resultado
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+        
     
-    def apply_erosion(self):
-        # erosão
-        pass
-    
-    def apply_opening(self):
-        # abertura
-        pass
-    
-    def apply_closing(self):
-        # fechamento
-        pass    
+    def apply_abertura(self):
+        if self.copia_imagem_transformada is not None:
+            # Crie um kernel (elemento estruturante) para as operações de erosão e dilatação
+            kernel = np.ones((3, 3), np.uint8)
+
+            # Aplicar a operação de erosão na imagem
+            imagem_erodida = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
+
+            # Aplicar a operação de dilatação na imagem erodida
+            resultado = cv2.dilate(imagem_erodida, kernel, iterations=1)
+
+            self.copia_imagem_transformada = resultado
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+            
+    def apply_fechamento(self):
+        if self.copia_imagem_transformada is not None:
+            # Crie um kernel (elemento estruturante) para as operações de erosão e dilatação
+            kernel = np.ones((3, 3), np.uint8)
+
+            # Aplicar a operação de erosão na imagem
+            imagem_erodida = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
+
+            # Aplicar a operação de dilatação na imagem erodida
+            resultado = cv2.dilate(imagem_erodida, kernel, iterations=1)
+
+            self.copia_imagem_transformada = resultado
+            self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+                            
         
     def remover_todos_filtros(self):
         if self.imagem_original is not None:
