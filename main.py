@@ -14,7 +14,7 @@ class AplicativoProcessamentoImagem:
         self.imagem_original = None
         self.imagem_transformada = None
         self.copia_imagem_transformada = None 
-        self.filtros_aplicados = []  # Lista para rastrear os filtros aplicados
+        self.filtros_aplicados = []  # lista para rastrear os filtros aplicados
 
         # Tela cheia ao abrir
         root.state('zoomed')  
@@ -95,7 +95,7 @@ class AplicativoProcessamentoImagem:
         
         self.root.config(menu=barra_menu)
 
-    # Funções dos botões    
+    # funções dos botões    
     def abrir_imagem(self):
         caminho_arquivo = filedialog.askopenfilename()
         if caminho_arquivo:
@@ -143,7 +143,8 @@ class AplicativoProcessamentoImagem:
     # transladar - não sei se isso aqui ta certo
     def transladar_imagem(self):
         if self.copia_imagem_transformada is not None:
-            # Cria a janela de diálogo
+
+            # cria a janela de diálogo
             dialog = tk.Toplevel(self.root)
             dialog.title("Transladar Imagem")
 
@@ -164,25 +165,23 @@ class AplicativoProcessamentoImagem:
                 dialog.destroy()
 
                 if translacao_x != 0 or translacao_y != 0:
-                    # Define a matriz de transformação
+                    # define a matriz de transformação
                     matriz_translacao = np.float32([[1, 0, translacao_x], [0, 1, translacao_y]])
 
-                    # Aplica a translação na imagem
                     self.copia_imagem_transformada = cv2.warpAffine(self.copia_imagem_transformada, matriz_translacao, (self.copia_imagem_transformada.shape[1], self.copia_imagem_transformada.shape[0]))
 
-                    # Atualiza a exibição da imagem na interface
                     self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
             botao_aplicar = tk.Button(dialog, text="Aplicar", command=aplicar_translacao)
             botao_aplicar.pack()
 
-    # rotacionar
+    # rotacionar - OK
     def rotacionar_imagem(self):
          if self.copia_imagem_transformada is not None:
-            # Gire a imagem em 90 graus
+            # gire a imagem em 90 graus
             self.copia_imagem_transformada = cv2.rotate(self.copia_imagem_transformada, cv2.ROTATE_90_CLOCKWISE)
 
-            # Atualize a exibição da imagem na interface
+            # atualize a exibição da imagem na interface
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
     # espelhar - OK
@@ -191,6 +190,7 @@ class AplicativoProcessamentoImagem:
             self.copia_imagem_transformada = cv2.flip(self.copia_imagem_transformada, 1)
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
     
+    # aumentar - OK
     def aumentar_imagem(self):
         if self.copia_imagem_transformada is not None:
             pil_img = Image.fromarray(cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2RGB))
@@ -198,6 +198,7 @@ class AplicativoProcessamentoImagem:
             self.copia_imagem_transformada = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
             
+    # diminuir - OK
     def diminuir_imagem(self):
         if self.copia_imagem_transformada is not None:
             pil_img = Image.fromarray(cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2RGB))
@@ -205,7 +206,7 @@ class AplicativoProcessamentoImagem:
             self.copia_imagem_transformada = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
     
-    # grayscale
+    # grayscale - OK
     def aplicar_grayscale(self):
         if self.imagem_original is not None:
             self.filtros_aplicados.append("Grayscale")
@@ -226,7 +227,7 @@ class AplicativoProcessamentoImagem:
         self.copia_imagem_transformada = cv2.convertScaleAbs(self.copia_imagem_transformada, alpha=valor_ajuste)
         self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
     
-    # passa baixa
+    # passa baixa - OK
     def apply_low_pass(self, filter_type):
         if self.copia_imagem_transformada is not None:
             if filter_type == "Média":
@@ -244,7 +245,7 @@ class AplicativoProcessamentoImagem:
             self.copia_imagem_transformada = result
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
-    
+    # passa alta - OK
     def apply_high_pass(self, filter_type):
         if self.copia_imagem_transformada is not None:
             if filter_type == "Robert":
@@ -290,65 +291,62 @@ class AplicativoProcessamentoImagem:
             self.copia_imagem_transformada = result
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
-    
+    # dilatação - OK
     def apply_dilatacao(self):
         if self.copia_imagem_transformada is not None:
-            # Crie um kernel (elemento estruturante) para a dilatação
             kernel = np.ones((3, 3), np.uint8)
 
-            # Aplicar a operação de dilatação na imagem
             resultado = cv2.dilate(self.copia_imagem_transformada, kernel, iterations=1)
 
             self.copia_imagem_transformada = resultado
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
         
-    
+    # erosão - OK
     def apply_erosao(self):
         if self.copia_imagem_transformada is not None:
-            # Crie um kernel (elemento estruturante) para a erosão
             kernel = np.ones((3, 3), np.uint8)
 
-            # Aplicar a operação de erosão na imagem
             resultado = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
 
             self.copia_imagem_transformada = resultado
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
         
-    
+    # abertura - OK
     def apply_abertura(self):
         if self.copia_imagem_transformada is not None:
-            # Crie um kernel (elemento estruturante) para as operações de erosão e dilatação
             kernel = np.ones((3, 3), np.uint8)
-
-            # Aplicar a operação de erosão na imagem
+        
+            # erosão
             imagem_erodida = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
-
-            # Aplicar a operação de dilatação na imagem erodida
+        
+            # dilatação
             resultado = cv2.dilate(imagem_erodida, kernel, iterations=1)
 
             self.copia_imagem_transformada = resultado
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
             
+    # fechamento - OK
     def apply_fechamento(self):
         if self.copia_imagem_transformada is not None:
-            # Crie um kernel (elemento estruturante) para as operações de erosão e dilatação
             kernel = np.ones((3, 3), np.uint8)
-
-            # Aplicar a operação de erosão na imagem
-            imagem_erodida = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
-
-            # Aplicar a operação de dilatação na imagem erodida
-            resultado = cv2.dilate(imagem_erodida, kernel, iterations=1)
+        
+            # dilatação
+            imagem_dilatada = cv2.dilate(self.copia_imagem_transformada, kernel, iterations=1)
+        
+            # erosão
+            resultado = cv2.erode(imagem_dilatada, kernel, iterations=1)
 
             self.copia_imagem_transformada = resultado
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
+
                             
         
     def remover_todos_filtros(self):
         if self.imagem_original is not None:
             self.copia_imagem_transformada = self.imagem_original.copy()
             
-            # Remova todos os filtros aplicados
+            # remove todos os filtros aplicados
             self.filtros_aplicados = []
 
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
