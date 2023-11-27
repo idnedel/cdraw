@@ -3,6 +3,10 @@ from tkinter import filedialog, messagebox
 import cv2
 import numpy as np
 from PIL import Image, ImageTk,  ImageOps
+import math
+import pytesseract
+import PySimpleGUI as box
+import io, os
 
 class AplicativoProcessamentoImagem:
     def __init__(self, root):
@@ -15,6 +19,7 @@ class AplicativoProcessamentoImagem:
         self.imagem_transformada = None
         self.copia_imagem_transformada = None 
         self.filtros_aplicados = []  # lista para rastrear os filtros aplicados
+        self.formas_identificadas = []
 
         # Tela cheia ao abrir
         root.state('zoomed')  
@@ -65,7 +70,7 @@ class AplicativoProcessamentoImagem:
         barra_menu.add_cascade(label="Pré-Processamento", menu=menu_pre_processamento)
         
         menu_filtro = tk.Menu(barra_menu, tearoff=0)
-                # Submenu para "Passa Baixa"
+        # Submenu para "Passa Baixa"
         passa_baixa_menu = tk.Menu(barra_menu, tearoff=0)
         passa_baixa_menu.add_command(label="Média", command=lambda: self.apply_low_pass("Média"))
         passa_baixa_menu.add_command(label="Moda", command=lambda: self.apply_low_pass("Moda"))
@@ -87,6 +92,10 @@ class AplicativoProcessamentoImagem:
         morphology_menu.add_command(label="Fechamento", command=self.apply_fechamento)
         barra_menu.add_cascade(label="Morfologia Matemática", menu=morphology_menu)
         
+        desafio_menu = tk.Menu(barra_menu, tearoff=0)
+        desafio_menu.add_command(label="Extração de Características", command=self.apply_desafio)
+        barra_menu.add_cascade(label="Desafio", menu=desafio_menu)
+    
         
     
         menu_remover_filtro = tk.Menu(barra_menu, tearoff=0)
@@ -213,20 +222,22 @@ class AplicativoProcessamentoImagem:
         self.copia_imagem_transformada = cv2.cvtColor(self.copia_imagem_transformada, cv2.COLOR_BGR2GRAY)
         self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
+    # brilho - OK
     def aplicar_brilho(self):
         if self.copia_imagem_transformada is not None:
             self.filtros_aplicados.append("Brilho")
         valor_ajuste = 10  # Ajuste o valor do brilho conforme necessário
         self.copia_imagem_transformada = cv2.convertScaleAbs(self.copia_imagem_transformada, alpha=1, beta=valor_ajuste)
         self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
-        
+    
+    # contraste - OK
     def aplicar_contraste(self):
         if self.copia_imagem_transformada is not None:
             self.filtros_aplicados.append("Contraste")
         valor_ajuste = 1.5  # Ajuste o valor do contraste conforme necessário
         self.copia_imagem_transformada = cv2.convertScaleAbs(self.copia_imagem_transformada, alpha=valor_ajuste)
         self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
-    
+          
     # passa baixa - OK
     def apply_low_pass(self, filter_type):
         if self.copia_imagem_transformada is not None:
@@ -315,12 +326,8 @@ class AplicativoProcessamentoImagem:
     def apply_abertura(self):
         if self.copia_imagem_transformada is not None:
             kernel = np.ones((3, 3), np.uint8)
-        
-            # erosão
-            imagem_erodida = cv2.erode(self.copia_imagem_transformada, kernel, iterations=1)
-        
-            # dilatação
-            resultado = cv2.dilate(imagem_erodida, kernel, iterations=1)
+    
+            resultado = cv2.morphologyEx(self.copia_imagem_transformada,cv2.MORPH_OPEN, kernel, iterations=1)
 
             self.copia_imagem_transformada = resultado
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
@@ -329,19 +336,89 @@ class AplicativoProcessamentoImagem:
     # fechamento - OK
     def apply_fechamento(self):
         if self.copia_imagem_transformada is not None:
-            kernel = np.ones((3, 3), np.uint8)
+            kernel = np.ones((11, 11), np.uint8)
         
-            # dilatação
-            imagem_dilatada = cv2.dilate(self.copia_imagem_transformada, kernel, iterations=1)
-        
-            # erosão
-            resultado = cv2.erode(imagem_dilatada, kernel, iterations=1)
+            resultado = cv2.morphologyEx(self.copia_imagem_transformada,cv2.MORPH_CLOSE, kernel, iterations=1)
 
             self.copia_imagem_transformada = resultado
             self.exibir_imagem(self.copia_imagem_transformada, self.rotulo_imagem_transformada)
 
-                            
-        
+    # desafio - OK
+    def apply_desafio(self):
+        numero1 = 0
+        operador = ''
+        numero2 = 0
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+        layout = [
+            [box.Text("Desafio: Reconhecimento de números e operadores matemáticos")],
+            [box.Text(" ")],
+            [box.Text("Selecione os dois numeros e o operador na pasta "'numeros'", então clique em calcular:")],
+            [box.Text(" ")],           
+            [box.Text("Primeiro número:    "), box.InputText(key="numero1", size=(10, 10), disabled=True),
+             box.Text("     "), box.Button("Numero 1")],
+            [box.Text("Operador:               "), box.InputText(key="operador", size=(10, 10), disabled=True),
+             box.Text("     "), box.Button("Operador")],
+            [box.Text("Segundo número:    "), box.InputText(key="numero2", size=(10, 10), disabled=True),
+             box.Text("     "), box.Button("Numero 2")],
+            [box.Text("Resultado:              "), box.InputText(key="resultado", size=(10, 10), disabled=True),
+             box.Text("     "), box.Button("Calcular")],
+            [box.Text(" ")],
+            [box.Text(""), box.Button("Sair do Desafio")]
+        ]
+
+        window2 = box.Window("Desafio", layout)
+
+        while True:
+            event, values = window2.read()
+            if event == box.WINDOW_CLOSED or event == "Sair do Desafio":
+                window2.close()
+                return
+            if event == "Numero 1":
+                filename = box.PopupGetFile('', no_window=True)
+                if os.path.exists(filename):
+                    numero1 = self.identificar_imagem(filename, False)
+                window2["numero1"].update(value=numero1)
+            if event == "Operador":
+                filename = box.PopupGetFile('', no_window=True)
+                if os.path.exists(filename):
+                    operador = self.identificar_imagem(filename, True)
+                window2["operador"].update(value=operador)
+            if event == "Numero 2":
+                filename = box.PopupGetFile('', no_window=True)
+                if os.path.exists(filename):
+                    numero2 = self.identificar_imagem(filename, False)
+                window2["numero2"].update(value=numero2)
+            if event == "Calcular":
+                resultado = self.calcular_resultado(numero1, operador, numero2)
+                window2["resultado"].update(value=resultado)
+
+    def identificar_imagem(self, caminho, operador):
+        imagem = Image.open(caminho)
+        imagem = imagem.convert('L')
+        caractere = pytesseract.image_to_string(imagem, config='--psm 8', lang='eng').strip()
+
+        if operador and caractere in ["/", "+", "*", "-"]:
+            return pytesseract.image_to_string(imagem, config='--psm 8', lang='eng').strip()
+
+        if not operador and caractere in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+            return int(pytesseract.image_to_string(imagem, config='--psm 8', lang='eng').strip())
+
+        return
+
+    def calcular_resultado(self, numero1, operador, numero2):
+        resultado = 0
+        if operador == "+":
+            resultado = numero1 + numero2
+        elif operador == "-":
+            resultado = numero1 - numero2
+        elif operador == "/":
+            resultado = numero1 / numero2
+        elif operador == "*":
+            resultado = numero1 * numero2
+        return resultado
+    
+    
     def remover_todos_filtros(self):
         if self.imagem_original is not None:
             self.copia_imagem_transformada = self.imagem_original.copy()
@@ -354,4 +431,5 @@ class AplicativoProcessamentoImagem:
 if __name__ == "__main__":
     root = tk.Tk()
     app = AplicativoProcessamentoImagem(root)
+    root.protocol("WM_DELETE_WINDOW", app.root.quit)
     root.mainloop()
