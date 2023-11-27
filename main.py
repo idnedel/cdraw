@@ -348,7 +348,7 @@ class AplicativoProcessamentoImagem:
         numero1 = 0
         operador = ''
         numero2 = 0
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        pytesseract.pytesseract.tesseract_cmd = r'caminho_tesseract'
 
         layout = [
             [box.Text("Desafio: Reconhecimento de números e operadores matemáticos")],
@@ -418,7 +418,7 @@ class AplicativoProcessamentoImagem:
             resultado = numero1 * numero2
         return resultado
     
-    
+
     def remover_todos_filtros(self):
         if self.imagem_original is not None:
             self.copia_imagem_transformada = self.imagem_original.copy()

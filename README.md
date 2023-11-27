@@ -12,7 +12,7 @@
 
 1. Instale o tesseract com o instalador que se encontra na :file_folder: instalador-tesseract;
 
-2. Altere o valor da variavel `caminho_tesseract` na linha [248] com o caminho da instalação do tesseract realizada no passo anterior;
+2. Altere o valor da variavel `caminho_tesseract` na linha {351} com o caminho da instalação do tesseract realizada no passo anterior;
 
 3. Adicione também o caminho do tesseract às variáveis de ambiente do windows, na opção "PATH";
 
